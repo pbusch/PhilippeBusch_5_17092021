@@ -1,13 +1,8 @@
 
 import { Article } from "./article.js";
+import { Cart } from "./article.js";
 
-class Cart {
-  constructor(id, color, quantity) {
-    this.id = id;
-    this.color = color;
-    this.quantity = quantity;
-  }
-}
+
 
 var str = window.location.href;
 var url = new URL(str);
@@ -51,12 +46,11 @@ function addToCart() {
   }
   else {
     const cartJSON = JSON.parse(localStorage.getItem("cart") || "[]");
-    //const cartElement = [id, document.getElementById("colors").options[document.getElementById("colors").selectedIndex].text, document.getElementById("quantity").value];
-    let cartElement = new Cart(id, document.getElementById("colors").options[document.getElementById("colors").selectedIndex].text, parseInt(document.getElementById("quantity").value));
+    let cartElement = new Cart(id, document.getElementById("colors").options[document.getElementById("colors").selectedIndex].text, parseInt(document.getElementById("quantity").value), parseInt(document.getElementById("price").textContent));
     for (let jsonArticle of cartJSON) {
       if (cartElement.id == jsonArticle.id && cartElement.color == jsonArticle.color) {
         console.log("doublon trouvé");
-        jsonArticle.quantity = jsonArticle.quantity + cartElement.quantity;
+        jsonArticle.quantity = parseInt(jsonArticle.quantity) + parseInt(cartElement.quantity);
         localStorage.setItem("cart", JSON.stringify(cartJSON));
         var doublon = 2;
         window.location.href = "cart.html";
