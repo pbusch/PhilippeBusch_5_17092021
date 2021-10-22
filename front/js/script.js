@@ -1,17 +1,13 @@
 import { Article } from "./article.js";
 
-fetch("http://localhost:3000/api/products")
+//récupération de la liste des produits depuis l'API et affichage sur la page
 
-  //récupération des articles
-
-  .then(data => data.json())
-
-  // affichage des articles
-
-  .then(jsonListArticle => {
-    for (let jsonArticle of jsonListArticle) {
-      let article = new Article(jsonArticle);
-      document.querySelector(".items").innerHTML += `
+async function initListProduct() {
+  const response = await fetch("http://localhost:3000/api/products");
+  const jsonListArticle = await response.json();
+  for (let jsonArticle of jsonListArticle) {
+    let article = new Article(jsonArticle);
+    document.querySelector(".items").innerHTML += `
       <a href="./product.html?id=${article._id}">
             <article>
               <img src="${article.imageUrl}" alt="${article.altTxt}">
@@ -20,7 +16,7 @@ fetch("http://localhost:3000/api/products")
             </article>
           </a>
       `
-
-    }
-  })
+  }
+}
+initListProduct();
 

@@ -30,5 +30,11 @@ export class Contact {
     }
 }
 
+export class Order {
+    constructor(contact) {
+        this.contact = contact;
+    }
+}
+
 
 
