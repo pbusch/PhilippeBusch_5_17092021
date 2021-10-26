@@ -1,7 +1,7 @@
 import { Article } from "./article.js";
 import { Cart } from "./article.js";
 import { Contact } from "./article.js";
-import { Order } from "./article.js";
+
 
 //récupération du panier
 
@@ -42,7 +42,7 @@ function deleteItem() {
     newTotals();
 };
 
-//changements de quantités
+//changement de quantités
 
 function changeQuantity() {
     const attribute = this.closest(".cart__item");
@@ -198,10 +198,8 @@ initCart().then(() => {
                     //Traitement de la réponse de l'api et redirection sur page de confirmation avec orderId
                     .then(response => response.json())
                     .then(jsonResult => {
-                        let newOrder = new Order(jsonResult);
-                        let orderId = (newOrder.contact).orderId;
                         localStorage.removeItem("cart");
-                        window.location.href = "confirmation.html?orderId=" + orderId;
+                        window.location.href = "confirmation.html?orderId=" + jsonResult.orderId;
                     })
             }
             else {

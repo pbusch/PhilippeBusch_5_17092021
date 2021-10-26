@@ -11,15 +11,6 @@ export class Cart {
         this.cartPrice = cartPrice;
     }
 }
-
-export class FinalCart {
-    constructor(id, quantity, price) {
-        this.id = id;
-        this.quantity = quantity;
-        this.price = price
-    }
-}
-
 export class Contact {
     constructor(firstName, lastName, address, city, email) {
         this.firstName = firstName;
@@ -30,11 +21,7 @@ export class Contact {
     }
 }
 
-export class Order {
-    constructor(contact) {
-        this.contact = contact;
-    }
-}
+
 
 
 
