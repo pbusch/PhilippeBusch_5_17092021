@@ -3,11 +3,19 @@ import { Cart } from "./article.js";
 import { Contact } from "./article.js";
 
 
-//récupération du panier
+//récupération du panier et tri par id
 
 const cartJSON = JSON.parse(localStorage.getItem("cart") || "[]");
+cartJSON.sort(function (x, y) {
+    let a = x.id,
+        b = y.id;
+    return a == b ? 0 : a > b ? 1 : -1;
+});
 
-//calcul des totaux quantités / prix
+
+/**
+*calcul des totaux quantités / prix
+*/
 
 function newTotals() {
     let cartJSON = JSON.parse(localStorage.getItem("cart") || "[]");
@@ -23,7 +31,10 @@ function newTotals() {
 };
 
 
-// Supression d'un article de la page et du localstorage
+/**
+*Supression d'un article de la page et du localstorage
+*/
+
 function deleteItem() {
     const attribute = this.closest(".cart__item");
     const delID = attribute.dataset.id;
@@ -42,9 +53,15 @@ function deleteItem() {
     newTotals();
 };
 
-//changement de quantités
+/**
+ * changement de quantités
+ */
 
 function changeQuantity() {
+    if (this.value < 1 || this.value > 100) {
+        alert("veuillez entrer une quantité entre 1 et 100");
+        return;
+    }
     const attribute = this.closest(".cart__item");
     const changeID = attribute.dataset.id;
     const changeColor = attribute.dataset.color;
@@ -63,7 +80,10 @@ function changeQuantity() {
 
 }
 
-// validation de nom / prenom
+/**
+ * validation de nom / prenom
+ */
+
 function checkAlpha(letters) {
     let regex = /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u;
     if (regex.test(letters.value) == false) {
@@ -74,7 +94,10 @@ function checkAlpha(letters) {
     return true;
 }
 
-//validation email
+/**
+ * validation email
+ */
+
 function checkEmail(email) {
     //let regex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
     //let regex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
@@ -87,7 +110,10 @@ function checkEmail(email) {
     return true;
 }
 
-//validation adresse / ville - minimum de 2 caractères (on part du principe que la ville peut contenir un code postal et/ou un Cedex et donc des chiffres)
+/**
+ * validation adresse / ville - minimum de 2 caractères 
+ */
+
 function checkAdress(chars) {
     let regex = /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð0-9\s,.'-]{2,}$/;
     if (regex.test(chars.value) == false) {
@@ -98,7 +124,10 @@ function checkAdress(chars) {
     return true;
 }
 
-//déclenchement automatique de toutes les validations - appelé par le bouton commander
+/**
+ * déclenchement de toutes les validations 
+ */
+
 function checkAll() {
     let clickEvent = new Event('change');
     document.getElementById("firstName").dispatchEvent(clickEvent);
@@ -111,13 +140,14 @@ function checkAll() {
 // Boulce de récupération des données (localstorage + api) et affichage dans la page
 
 async function initCart() {
-    for (let a of cartJSON) {
-        let cartArticle = new Cart(a.id, a.color, a.quantity);
-        let cartElement = [cartArticle.id, cartArticle.color, cartArticle.quantity]
-        const response = await fetch("http://localhost:3000/api/products/" + cartElement[0]);
-        const jsonArticle = await response.json();
-        const article = new Article(jsonArticle);
-        document.getElementById("cart__items").innerHTML += `
+    try {
+        for (let couch of cartJSON) {
+            let cartArticle = new Cart(couch.id, couch.color, couch.quantity);
+            let cartElement = [cartArticle.id, cartArticle.color, cartArticle.quantity]
+            const response = await fetch("http://localhost:3000/api/products/" + cartElement[0]);
+            const jsonArticle = await response.json();
+            const article = new Article(jsonArticle);
+            document.getElementById("cart__items").innerHTML += `
             <article class="cart__item" data-id="${cartElement[0]}" data-color="${cartElement[1]}">
             <div class="cart__item__img">
             <img src="${article.imageUrl}" alt="${article.altTxt}">
@@ -139,12 +169,13 @@ async function initCart() {
             </div>
             </div>
             </article>`;
+        }
+    } catch {
+        alert("Nous connaissons une difficulté technique. Merci de re-essayer plus tard.");
     }
 }
 
 initCart().then(() => {
-
-
 
     //event listeners sur formulaire
     const input = document.querySelector(".cart__order__form");
@@ -187,6 +218,7 @@ initCart().then(() => {
             const contact = new Contact(document.getElementById("firstName").value, document.getElementById("lastName").value, document.getElementById("address").value, document.getElementById("city").value, document.getElementById("email").value);
             const products = JSON.parse(localStorage.getItem("cart") || "[]").map(product => product.id);
             if (products.length > 0) {
+
                 fetch("http://localhost:3000/api/products/order/", {
                     method: "POST",
                     headers: {
@@ -201,6 +233,7 @@ initCart().then(() => {
                         localStorage.removeItem("cart");
                         window.location.href = "confirmation.html?orderId=" + jsonResult.orderId;
                     })
+
             }
             else {
                 alert("Votre panier est vide !");
