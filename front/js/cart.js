@@ -34,8 +34,8 @@ function newTotals() {
 *Supression d'un article de la page et du localstorage
 */
 
-function deleteItem(boutton) {
-    const attribute = boutton.closest(".cart__item");
+function deleteItem(delLink) {
+    const attribute = delLink.closest(".cart__item");
     const delID = attribute.dataset.id;
     const delColor = attribute.dataset.color;
     let cartJSON = getBasket();
