@@ -5,12 +5,8 @@ import { Contact } from "./article.js";
 
 //récupération du panier et tri par id
 
-const cartJSON = JSON.parse(localStorage.getItem("cart") || "[]");
-cartJSON.sort(function (x, y) {
-    let a = x.id,
-        b = y.id;
-    return a == b ? 0 : a > b ? 1 : -1;
-});
+const cartJSON = getBasket();
+cartJSON.sort((x, y) => y.id.localeCompare(x.id));
 
 
 /**
@@ -18,7 +14,7 @@ cartJSON.sort(function (x, y) {
 */
 
 function newTotals() {
-    let cartJSON = JSON.parse(localStorage.getItem("cart") || "[]");
+    let cartJSON = getBasket();
     let newQuantity = 0;
     let newTotal = 0;
     for (let jsonArticle of cartJSON) {
@@ -35,11 +31,11 @@ function newTotals() {
 *Supression d'un article de la page et du localstorage
 */
 
-function deleteItem() {
-    const attribute = this.closest(".cart__item");
+function deleteItem(boutton) {
+    const attribute = boutton.closest(".cart__item");
     const delID = attribute.dataset.id;
     const delColor = attribute.dataset.color;
-    let cartJSON = JSON.parse(localStorage.getItem("cart") || "[]");
+    let cartJSON = getBasket();
     let index = 0;
     for (let jsonArticle of cartJSON) {
         let cartArticle = new Cart(jsonArticle.id, jsonArticle.color, jsonArticle.quantity);
@@ -50,8 +46,12 @@ function deleteItem() {
     }
     localStorage.setItem("cart", JSON.stringify(cartJSON));
     attribute.remove();
-    newTotals();
+
 };
+
+function getBasket() {
+    return JSON.parse(localStorage.getItem("cart") || "[]");
+}
 
 /**
  * changement de quantités
@@ -65,7 +65,7 @@ function changeQuantity() {
     const attribute = this.closest(".cart__item");
     const changeID = attribute.dataset.id;
     const changeColor = attribute.dataset.color;
-    let cartJSON = JSON.parse(localStorage.getItem("cart") || "[]");
+    let cartJSON = getBasket();
 
     for (let jsonArticle of cartJSON) {
         let cartArticle = new Cart(jsonArticle.id, jsonArticle.color, jsonArticle.quantity);
@@ -84,14 +84,14 @@ function changeQuantity() {
  * validation de nom / prenom
  */
 
-function checkAlpha(letters) {
+function checkAlpha(event) {
     let regex = /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u;
-    if (regex.test(letters.value) == false) {
-        letters.nextElementSibling.innerHTML = '* Entrée non valide';
-        return false;
+    if (regex.test(event.target.value) == false) {
+        event.target.nextElementSibling.innerHTML = '* Entrée non valide';
+
+    } else {
+        event.target.nextElementSibling.innerHTML = "";
     }
-    letters.nextElementSibling.innerHTML = "";
-    return true;
 }
 
 /**
@@ -179,11 +179,10 @@ initCart().then(() => {
 
     //event listeners sur formulaire
     const input = document.querySelector(".cart__order__form");
-    input.firstName.addEventListener('change', function () {
-        checkAlpha(this);
-    });
-    input.lastName.addEventListener('change', function () {
-        checkAlpha(this);
+
+    input.firstName.addEventListener('change', checkAlpha);
+    input.lastName.addEventListener('change', function (event) {
+        checkAlpha(event);
     });
     input.address.addEventListener('change', function () {
         checkAdress(this);
@@ -198,7 +197,10 @@ initCart().then(() => {
     // listeners "supprimer"
     const del = document.querySelectorAll(".deleteItem");
     for (let i = 0; i < del.length; i++) {
-        del[i].addEventListener("click", deleteItem);
+        del[i].addEventListener("click", (event) => {
+            deleteItem(event.target);
+            newTotals();
+        });
     };
 
     //listeners "changer les quantités"
@@ -216,7 +218,7 @@ initCart().then(() => {
         if (document.getElementById("firstNameErrorMsg").innerHTML == "" && document.getElementById("lastNameErrorMsg").innerHTML == "" && document.getElementById("addressErrorMsg").innerHTML == "" && document.getElementById("cityErrorMsg").innerHTML == "" && document.getElementById("emailErrorMsg").innerHTML == "") {
 
             const contact = new Contact(document.getElementById("firstName").value, document.getElementById("lastName").value, document.getElementById("address").value, document.getElementById("city").value, document.getElementById("email").value);
-            const products = JSON.parse(localStorage.getItem("cart") || "[]").map(product => product.id);
+            const products = getBasket().map(product => product.id);
             if (products.length > 0) {
 
                 fetch("http://localhost:3000/api/products/order/", {
