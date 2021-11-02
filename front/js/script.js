@@ -23,7 +23,6 @@ async function initListProduct() {
           </a>
       `
   }
-
 }
 initListProduct();
 

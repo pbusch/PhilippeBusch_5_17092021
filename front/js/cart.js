@@ -2,12 +2,16 @@ import { Article } from "./article.js";
 import { Cart } from "./article.js";
 import { Contact } from "./article.js";
 
+/**
+*récupération du panier et regroupement par id
+*/
 
-//récupération du panier et tri par id
+function getBasket() {
+    return JSON.parse(localStorage.getItem("cart") || "[]");
+}
 
 const cartJSON = getBasket();
 cartJSON.sort((x, y) => y.id.localeCompare(x.id));
-
 
 /**
 *calcul des totaux quantités / prix
@@ -25,7 +29,6 @@ function newTotals() {
     document.getElementById("totalQuantity").textContent = newQuantity;
     document.getElementById("totalPrice").textContent = newTotal;
 };
-
 
 /**
 *Supression d'un article de la page et du localstorage
@@ -46,38 +49,29 @@ function deleteItem(boutton) {
     }
     localStorage.setItem("cart", JSON.stringify(cartJSON));
     attribute.remove();
-
 };
-
-function getBasket() {
-    return JSON.parse(localStorage.getItem("cart") || "[]");
-}
 
 /**
  * changement de quantités
  */
 
-function changeQuantity() {
-    if (this.value < 1 || this.value > 100) {
-        alert("veuillez entrer une quantité entre 1 et 100");
-        return;
-    }
-    const attribute = this.closest(".cart__item");
+function changeQuantity(selector) {
+    const attribute = selector.closest(".cart__item");
     const changeID = attribute.dataset.id;
     const changeColor = attribute.dataset.color;
     let cartJSON = getBasket();
-
+    if (parseInt(selector.value) < 1 || parseInt(selector.value) > 100) {
+        alert("veuillez entrer une quantité entre 1 et 100");
+        return;
+    }
     for (let jsonArticle of cartJSON) {
         let cartArticle = new Cart(jsonArticle.id, jsonArticle.color, jsonArticle.quantity);
         if (cartArticle.id == changeID && cartArticle.color == changeColor) {
-            jsonArticle.quantity = this.value;
-            this.previousElementSibling.innerHTML = `Qté : ${this.value}`;
+            jsonArticle.quantity = selector.value;
+            selector.previousElementSibling.innerHTML = `Qté : ${selector.value}`;
         }
-
     }
     localStorage.setItem("cart", JSON.stringify(cartJSON));
-    newTotals();
-
 }
 
 /**
@@ -88,7 +82,19 @@ function checkAlpha(event) {
     let regex = /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u;
     if (regex.test(event.target.value) == false) {
         event.target.nextElementSibling.innerHTML = '* Entrée non valide';
+    } else {
+        event.target.nextElementSibling.innerHTML = "";
+    }
+}
 
+/**
+ * validation adresse / ville - minimum de 2 caractères - caractères spéciaux interdits (hors accents et liaisons)
+ */
+
+function checkAdress(event) {
+    let regex = /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð0-9\s,.'-]{2,}$/;
+    if (regex.test(event.target.value) == false) {
+        event.target.nextElementSibling.innerHTML = '* Entrée non valide';
     } else {
         event.target.nextElementSibling.innerHTML = "";
     }
@@ -98,30 +104,13 @@ function checkAlpha(event) {
  * validation email
  */
 
-function checkEmail(email) {
-    //let regex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
-    //let regex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+function checkEmail(event) {
     let regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
-    if (regex.test(email.value) == false) {
-        email.nextElementSibling.innerHTML = '* Veuillez entrer une adresse email valide';
-        return false;
+    if (regex.test(event.target.value) == false) {
+        event.target.nextElementSibling.innerHTML = '* Veuillez entrer une adresse email valide';
+    } else {
+        event.target.nextElementSibling.innerHTML = "";
     }
-    email.nextElementSibling.innerHTML = "";
-    return true;
-}
-
-/**
- * validation adresse / ville - minimum de 2 caractères 
- */
-
-function checkAdress(chars) {
-    let regex = /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð0-9\s,.'-]{2,}$/;
-    if (regex.test(chars.value) == false) {
-        chars.nextElementSibling.innerHTML = '* Entrée non valide';
-        return false;
-    }
-    chars.nextElementSibling.innerHTML = "";
-    return true;
 }
 
 /**
@@ -179,22 +168,13 @@ initCart().then(() => {
 
     //event listeners sur formulaire
     const input = document.querySelector(".cart__order__form");
-
     input.firstName.addEventListener('change', checkAlpha);
-    input.lastName.addEventListener('change', function (event) {
-        checkAlpha(event);
-    });
-    input.address.addEventListener('change', function () {
-        checkAdress(this);
-    });
-    input.city.addEventListener('change', function () {
-        checkAdress(this);
-    });
-    input.email.addEventListener('change', function () {
-        checkEmail(this);
-    });
+    input.lastName.addEventListener('change', checkAlpha);
+    input.address.addEventListener('change', checkAdress);
+    input.city.addEventListener('change', checkAdress);
+    input.email.addEventListener('change', checkEmail);
 
-    // listeners "supprimer"
+    //listener "supprimer"
     const del = document.querySelectorAll(".deleteItem");
     for (let i = 0; i < del.length; i++) {
         del[i].addEventListener("click", (event) => {
@@ -203,10 +183,13 @@ initCart().then(() => {
         });
     };
 
-    //listeners "changer les quantités"
+    //listener "changer les quantités"
     const change = document.querySelectorAll(".itemQuantity");
     for (let i = 0; i < del.length; i++) {
-        change[i].addEventListener("change", changeQuantity);
+        change[i].addEventListener("change", (event) => {
+            changeQuantity(event.target);
+            newTotals();
+        });
     };
 
     //listener sur bouton "commander"
@@ -220,7 +203,6 @@ initCart().then(() => {
             const contact = new Contact(document.getElementById("firstName").value, document.getElementById("lastName").value, document.getElementById("address").value, document.getElementById("city").value, document.getElementById("email").value);
             const products = getBasket().map(product => product.id);
             if (products.length > 0) {
-
                 fetch("http://localhost:3000/api/products/order/", {
                     method: "POST",
                     headers: {
@@ -235,7 +217,6 @@ initCart().then(() => {
                         localStorage.removeItem("cart");
                         window.location.href = "confirmation.html?orderId=" + jsonResult.orderId;
                     })
-
             }
             else {
                 alert("Votre panier est vide !");
