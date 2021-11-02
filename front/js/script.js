@@ -3,6 +3,7 @@ import { Article } from "./article.js";
 /**
  * récupération de la liste des produits depuis l'API et affichage sur la page
  */
+
 async function initListProduct() {
   let jsonListArticle = [];
   try {

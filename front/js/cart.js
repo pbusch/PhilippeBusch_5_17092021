@@ -3,7 +3,7 @@ import { Cart } from "./article.js";
 import { Contact } from "./article.js";
 
 /**
-*récupération du panier et regroupement par id
+*récupération du localStorage et regroupement par id
 */
 
 function getBasket() {
@@ -163,6 +163,10 @@ async function initCart() {
         alert("Nous connaissons une difficulté technique. Merci de re-essayer plus tard.");
     }
 }
+
+/**
+ * Une fois le panier récupéré et affiché : positionement des listeners et calcul des totaux
+ */
 
 initCart().then(() => {
 
